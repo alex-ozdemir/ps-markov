@@ -4,7 +4,7 @@ import random
 import string
 import sys
 import itertools
-from flask import Flask
+from flask import Flask, render_template
 def windows(it, n):
     its = tuple(it[i:] for i in range(n))
     for t in zip(*its):

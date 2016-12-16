@@ -1,6 +1,15 @@
 body {
-  font: 12px serif;
-  background: #fff;
+  margin: auto;
+  font-family: serif;
+  font-size: 12pt;
+  max-width: 1000px;
+  padding: 10px;
+  background: #ffe;
+}
+
+.cm {
+  font-family: "Computer Modern Serif", "Times New Roman", Times, serif;
+  font-size: 11pt;
 }
 
 @font-face {
