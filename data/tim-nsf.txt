@@ -1,0 +1,131 @@
+When I arrived at Harvey Mudd for my freshman year, I didn’t know that I would study
+theoretical condensed matter physics. I was generally interested in science, and had meandered
+between summer programs in chemistry and psychology in high school. In that
+first year, I took Harvey Mudd’s Common Core, which included rigorous introductions to
+chemistry, biology, physics, mathematics, and computer science. These classes taught me
+to appreciate the broad applicability of scientific thinking – we were able to tackle diverse
+subjects from linear algebra to thermodynamics. Of these topics, the one that initially
+stood out was our introduction to quantum chemistry during our chemical structure course.
+The theory, based on a few simple but unintuitive premises, was strange, but it amazingly
+predicted chemical processes ranging all the way from spectra to chemical bonding. Even
+though I found the subject confusing, the possibility that chemical reactions could be predicted
+by physics was a compelling reason to overcome the difficulty. This fascination with
+the predictive power of quantum mechanics eventually led me to major in physics.
+The ideas in physics that resonated with me were those that unified the apparently disjoint
+subjects of Core, and seemed to naturally invite further study. In developing quantum
+mechanics, we generalized the linear algebra I learned in my freshman math classes to infinite
+dimensional spaces of functions. This idea has only gotten deeper, and it continues to motivate
+my further study of mathematics. Quantum mechanics was combined with statistical
+mechanics to justify the laws of thermodynamics, but the theory had an unsettling restriction
+to equilibrium, which prompted my interest in modern statistical physics. I enjoy theoretical
+physics because it connects different fields of science through the analysis of simple systems,
+in addition to being interesting in its own right. This opens up the opportunity for fruitful
+collaboration across disciplines in my research. In particular, I have found that the systems
+considered in condensed matter physics have broad applicability in other sciences, from engineering
+to biology. I strive to be an effective collaborator when working on these shared
+systems, paying attention to clear communication. As I learn to convey results in physics to
+non-physicists as part of my research, I hope that I will become a better teacher of physics
+for all audiences.
+Intellectual Merit: Independent Study
+In preparing for theoretical research, I have often found it necessary to study subjects that I
+either do not have time to take formally or are not offered at my university. In particular, I
+have found it useful to study the more mathematical aspects of physics on my own, leaving
+time to take cross-disciplinary classes such as physical chemistry. I have audited several
+classes that do not appear on my transcript, including abstract algebra and an additional
+course in linear algebra. I also studied out of lecture notes and books for several more areas,
+such as general topology. More formally, I conducted a full-semester independent study
+with Dr. Cave, in which we explored the representation-theoretic foundations of quantum
+mechanics, the quantum theory of light, and scattering theory. Studying these extra subjects
+gives me a more complete picture of the structure of physical theories.
+Intellectual Merit: Research Experience
+My first research experience was in Dr. Cave’s theoretical chemistry group at Harvey Mudd
+in the summer of 2014. The project was to numerically compute the diabatic states of a
+double delta function potential well. Diabatic states, in which the electronic coupling due to
+nuclear motion vanishes, are thought to be natural basis states in describing electron transfer
+reactions, as the quantum mechanical transition amplitude reduces to an off-diagonal element
+of the Hamiltonian. These states are typically computed using approximate definitions of
+the basis, so the goal of the project was to examine the properties of the exact definition
+in a simple system. Understanding the mathematical foundations of electron transfer can
+inform the construction of reasonable approximations for use in predicting real transfers.
+This type of reaction is of considerable interest, as it underlies biological processes such as
+photosynthesis and the electron transport chain in metabolism.
+As my first research experience, which I attempted before taking a dedicated course in
+quantum mechanics, progress was slow. I spent the first half of the summer meticulously
+debugging code and working from a misconception about diabatic states. Even so, I had
+many invigorating and often speculative conversations with Dr. Cave, and developed the
+basis of my current understanding of quantum mechanics. I learned the difficulty of working
+on scientific problems, as well as the importance of clearly communicating my results, even
+when negative. Eventually my persistence, along with those many useful conversations, paid
+off. I succeeded in creating my program, which could calculate and plot a diabatic basis and
+give the coupling as a function of well separation and asymmetry in strength. This work was
+a major factor in my selection as a Goldwater Scholar, and I also presented my findings in
+a poster session at the American Chemical Society’s Spring 2015 national conference.
+The next summer, I continued to work in theoretical chemistry, but under Dr. Burke
+at UC Irvine. I worked on density functional theory, solving simple models with the aim
+of improving approximations to the kinetic energy functional. This functional, which gives
+the kinetic energy of an electron cloud given only the density, has few successful direct
+approximations. Instead, the kinetic energy is often computed using a non-interacting wavefunction
+that produces the electron density, at the cost of introducing a set of non-linear
+matrix equations. A better approximation to the functional could replace these equations,
+possibly speeding up calculations. Since density functional theory has become a ubiquitous
+method in quantum chemistry, a promising result would spark general collaboration with
+other chemists. In addition, I found the working on theory itself quite fun, as it involves
+understanding functional calculus, a beautiful area of mathematics. Unfortunately, the work
+did not produce a publication, although I was able to present the solutions to my models in
+a talk and poster session at Harvey Mudd.
+Finally, this past summer, I joined Dr. Liu’s condensed matter physics group at the University
+of Pennsylvania as part of the REU program at the Laboratory for Research on the
+Structure of Matter (LRSM). The project was on the mechanical origins of segmentation in
+the fruit fly embryo, and was carried out in collaboration with Dr. DiNardo’s developmental
+biology lab at the University of Pennsylvania. About 7-10 hours into development, a fruit fly
+embryo imaged under a confocal microscope begins to visually form the segments characteristic
+of insect bodies. The tissue appears to undergo a banded order-disorder transition. What
+is particularly exciting is that it also develops a counter-intuitive tension anisotropy at the
+cell interfaces in the ordered state, in which the longer interfaces appear to be under higher
+tension. As this is the opposite of what we would expect from naive energy minimization
+arguments, there appears to be a mechanical mystery in the system. The research also helps
+unravel the development of structure during the early stages of life, a fundamental question
+in biology. I worked on implementing topological structure extraction and cell tracking
+code for analyzing confocal microscope images, which can be used by both physicists and
+biologists when analyzing the tissue. I also began to experiment with simulations of tissue,
+the subject of my research proposal. At the end of the summer, I wrote an unpublished
+summary report for the LRSM, and gave a talk to other REU students at the program. I
+am continuing this work for my senior thesis at Harvey Mudd.
+Broader Impacts: Collaboration
+All of my prior research has been carried out in collaboration with non-physicists, and as my
+research proposal details, I will continue to collaborate in my graduate studies. Theoretical
+physicists can contribute to cross-disciplinary studies by analyzing the aspects of systems
+described by simple quantitative models. For example, the models of biological tissue considered
+by physicists may have the ability to explain simple rearrangement processes relevant
+in developmental biology. These models can also be of considerable theoretical interest, with
+the potential to produce general insight. This is the case with glassy transitions in biological
+tissue, the subject of my research proposal. I also simply enjoy working in a cross-disciplinary
+environment, having lived among scientists from other fields both at Harvey Mudd and at
+the University of Pennsylvania. I love seeing the perspectives they bring, and their ideas
+often prompt my own. In my research, I will invest time into learning the goals of my collaborators
+and their field and making the results of theoretical physics more accessible to them.
+Finally, in learning to make theoretical physics more accessible to collaborators, I believe
+that I will be better able to communicate with the general public.
+Broader Impacts: Teaching and Outreach
+Clear communication is one of the foundations of the scientific community, and this applies
+to teaching just as much as it applies to collaboration. I have made efforts to improve my
+teaching of physics by participating in outreach and tutoring programs. For example, I
+have helped design science lessons for elementary school students as part of a local outreach
+program. In one of these lessons, we demonstrated the principles of sound waves, such as
+pitch, by having them build a simple pan flute. Participating in these programs helps me to
+understand the aspects of my study that become general knowledge, and to think about how
+to increase awareness of the basic principles of physics. I also helped to pilot, and continue to
+teach in, a new tutoring program at Harvey Mudd. It is intended for students entering with
+less training in Core subjects by supplementing our Academic Excellence program. In that
+capacity, I have served as a tutor not only for physics, but also for chemistry and computer
+science. This opportunity has given me the chance to think about the pedagogical needs of
+different fields of science and engineering, as the students in the program are interested in a
+wide variety of fields. For example, in one session with an aspiring engineer, we worked out
+the purpose of brushes on electric motors using a simple wire loop in a magnetic field model.
+After we worked the problem, the student started telling me about the modern design of
+airplanes. Suddenly, I was the one being taught, this time about the physics of air flow
+over wings and the stability of helicopters. When I instruct courses in the future, I intend
+to keep these experiences in mind, paying attention to key points for non-physicists, and
+working examples that appeal to their interests when possible. Since most scientists pass
+through a basic physics course at some point, the pedagogy choices made by physicists has
+the potential to impact the education of the scientific community as a whole.
