@@ -123,7 +123,7 @@ except:
 app = Flask(__name__)
 
 @app.route("/raw")
-def hello():
+def raw():
     global ngrams, d, l, n
     out = gen(ngrams, d, l)
     print('Generated')
@@ -134,7 +134,7 @@ def hello():
     return out
 
 @app.route("/")
-def hello():
+def formatted():
     global ngrams, d, l, n
     out = gen(ngrams, d, l)
     print('Generated')

@@ -10,6 +10,8 @@ body {
 .cm {
   font-family: "Computer Modern Serif", "Times New Roman", Times, serif;
   font-size: 11pt;
+  max-width: 6in;
+  margin: auto;
 }
 
 @font-face {
