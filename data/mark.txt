@@ -1,0 +1,62 @@
+I am a physics major at Harvey Mudd College with a deep interest in Computer Science. Over the
+past three years, I have developed a passion for problem solving and an appreciation for the
+mathematical tools involved. I enjoy digging into the gritty details of problems with pen and paper,
+and I am not afraid to get in over my head. I am excited by the possibilities in machine learning and
+fact that theoretical breakthroughs can produce real applications with minimal delay. My aim upon
+completing a Ph.D. is become a researcher in the field either in academia or in a private research
+lab.
+I spent my freshman and sophomore summers in Dr. Alexander Kutyrev’s instrumentation lab at
+NASA Goddard as a student intern. During this time, I tackled a variety of challenges. One of the
+notable outcomes for the first summer was a procedure for sub-micron rotation measurement using
+phase only correlation, turning a regular lab camera into a high precision optical encoder. It was
+astounding how much more powerful this technique was than the methods I had been
+experimenting with earlier. With the help of Dr. Kutyrev in the second summer, I developed an
+inexpensive cryogenic temperature controller to be used on their infrared imager/spectrometer. I
+was fortunate to be able to see this project through from its conception to conclusion. The results
+both summers’ research were presented at the Goddard Space Flight Center poster session, and the
+abstracts can be found online.
+Eager to do research at my home campus, I joined Professor Tom Donnelly’s plasma physics
+group in my sophomore year and have been with them ever since. The goal of this project is to
+experimentally verify a model for coupling laser energy into plasmas more efficiently than has been
+done before. I spent this past summer working to complete the experiment. Under time pressure
+and faced with seemingly impenetrable problems, we were forced to be creative. In the last month
+of the project, I led a three-man HMC team to setup and perform this experiment in University of
+Texas (UT) Austin’s high-energy laser facility in collaboration with our UT colleagues. While the
+experiment was ultimately unsuccessful due to a malfunction with the high-power GHOST laser, I
+learned how to tackle a big project, break it down into pieces, and take responsibility for the
+problems that arise. My senior thesis work focuses on wrapping up this project and automating the
+relevant sub-experiments that can be performed on campus.
+While Computer Science has only taken the driving seat in my curricular life this past year, it has
+been an interest of mine for some time. Many of my physics projects have taken a computational
+slant, including an interactive numerical Schrodinger equation solver that my professor plans to
+embed into a homework assignment for the class. Energized by a video lecture on adversarial game
+playing, I embarked on the journey of writing my own chess engine in C++. While I eventually ran
+out of gas for this side project when implementing static exchange evaluation, I had a great deal of
+fun in the process and it piqued my interest in AI. More recently, my attention has turned to
+machine learning.
+I am impressed by the success of convolutional neural networks on image classification
+problems. However, I am surprised that traditional convolution layers are used despite not being
+resilient against rotation and scaling of elements in the target image, for the same reason that the
+method of Eigenfaces performs poorly when faces are not aligned. I gather that this problem can be
+alleviated by padding the training set with rotated (and scaled) versions of the original images, but 
+why not do away with this altogether? This strikes me as one place where more sophisticated
+spectral methods, metering transformations other than translations could be applicable.
+Additionally, I’m interested in applications of nonlinear dimensionality reduction more generally. I
+see this as becoming increasingly important not only as practitioners incorporate data with more
+features, but also in moving towards the goal of more general systems with less insight required by
+the practitioner.
+I wish to pursue a Ph.D. in the foundations of machine learning, and Stanford has multiple
+groups performing top tier research in this area. Prof. Li Fei-Fei’s research on joining together object
+classification and annotation within scenes is especially compelling. Methods for coupling together
+machine learning systems that are solving distinct but related problems seems like an area of
+fundamental importance, but also one that is not getting enough attention. On a different note,
+Prof. Doug James’ recent work on more realistic physically based audio is fascinating. I love how the
+physics, applied math, and computer science come together in this arena to produce rich sound that
+can be generated in a reasonable amount of time. In turn, the challenge to produce these sounds
+gives insight into which physical principles are responsible for what, like the unexpected importance
+of acceleration noise in the sounds of small and stiff objects.
+While my physics background is not traditional, I am eager to learn new concepts and adapt as
+necessary. I think that the familiarity I have gained during my physics degree with abstract vector
+spaces, asymptotics, and smooth manifolds will be invaluable to performing research on the
+foundations of machine learning. Furthermore, I hope to bring a fresh set of eyes, thinking along
+different pathways than students who proceeded through a CS degree in the usual way.

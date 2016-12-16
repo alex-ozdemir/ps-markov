@@ -1,0 +1,86 @@
+Three lessons that stand out to me the most from my time at Harvey Mudd: (a) doing
+independent research excites rather than intimidates me, (b) computer science is fascinating,
+and (c) teaching is both important and rewarding. These three lessons shape my desire to
+pursue graduate research in Programming Languages or Algorithms next year, in hope of
+becoming a professor in years to follow.
+What first started me down the path to research was some of the advanced coursework
+offered at Harvey Mudd. One such course was Computational Biology, in which Professor
+Ran Libeskind-Hadas guided us through problems in phylogenetics that required the use of
+sophisticated algorithms. The topic was intriguing, so a friend and I reached out to Prof.
+Ran to see if he had any interesting problems for us to work on.
+That conversation turned into a fascinating project concerning cophylogeny: the problem
+of reconciling related phylogenetic trees (such as pair of co-evolving populations or a
+population’s species and gene tree). While there are fast algorithms for finding an optimal
+reconciliation, it turns out that there can be an exponential number of optimal reconciliations
+(in both theory and practice). We set out to run clustering algorithms on this exponentially
+large space in polynomial time, in order to report cluster centers as a succinct representation
+of the space of optimal reconciliations. Over the next few weeks my partner and I contemplated
+the problem endlessly and discussed our progress with Prof. Ran each week. By the
+end of the semester we had designed a graph algorithm that allowed many different clustering
+algorithms (such as k-means and k-centers) to be applied to the problem in polynomial
+time, had proved the algorithms’s correctness, and had implemented and tested it on large
+datasets. Since then the algorithm and results have been written up and are in submission
+for RECOMB 2017. Ultimately the project showed me that I’m capable of bringing the
+creativity and enthusiasm I show in class to bear on cutting edge problems, and that by
+doing so I can expand the boundaries of human understanding.
+During that same semester I took a pair of PLs courses, one traditional, and the other a
+Domain Specific Language design and implementation course. These sparked my interest in
+PLs and led me to spend my summer working with Steve Chong doing program analysis at
+Harvard. During the summer I worked on improving our understanding of how raw pointers
+are used in the Rust programming language. In pursuit of this I built analyses of varying
+complexity, ran them on large numbers of Rust programs, and communicated my goals,
+progress, and results to a variety of audiences, from computer scientists to sociologists. I
+used syntactic analyses to find primitive patterns in how raw pointers are used, and to enable
+others to more easily search for such patterns. I proceeded to develop characterizations
+of problematic usage patterns for unsafe and build a dataflow analysis for detecting when
+pointers of unverified origin were dereferenced. The project was a challenging one. It showed
+me that while abstract and beautiful ideas can be leveraged to solve practical problems, doing
+so often requires great care and patience. Going through this process for each new iteration
+of my analyses taught me the importance of patience and perseverance.
+Upon returning for the fall semester I got special permission from the CS department to
+design and teach a for-credit half-course. I planned the course, gave weekly lectures, and
+wrote weekly assignments, guiding students through the details of Rust’s type system. While
+I’ve tutored and graded extensively in the past (15+ courses across math, CS, and physics),
+the experience of teaching has been on a while new level. It’s been an absolute joy and I’m
+immensely grateful to the department and the students for putting their trust in me.
+This semester I’ve also taken on another research project, this time investigating a class
+of data structures. I’ve chosen to do my senior thesis on generalizations of top-down splay
+trees: binary search trees that use a top-down move-to-front system to guarantee logarithmic
+amortized access time. The project is one of my own design, motivated by a desire to better
+understand why splay trees provide such good amortized bounds. Forming the project
+involved doing a literature review, which gave me experience reading papers and relating
+their work to my own goals. I’ve already made some progress by describing a class of
+general top-down splay algorithms that are each duals to some bottom-up splay algorithm
+and proving they provide the same guarantees as their bottom-up duals.
+These projects have developed my research skills along multiple axes. I’ve explored
+unsolved problems and developed creative solutions to them. I’ve learned how to effectively
+work with fellow students and advisors. I’ve used existing literature to guide me as I ask
+and answer my own research questions. I’ve gone through the process of turning beautiful
+ideas into useful tools, and have realized that even though it’s often painstaking the process
+is worth it. Collectively these projects have shown me I have the aptitude, inclination, and
+preparation required for successful and enjoyable graduate study.
+Through these projects I’ve come to see computer science as the art of expressing computation,
+and algorithms and PLs as two sides of it, both of which I enjoy. I’ve been exposed
+to research in Programming Languages through my work on program analyses for Rust, and
+I’ve been exposed to both pure and applied algorithms research through my work on Splay
+trees and cophylogeny respectively. I’ve found all these projects fascinating and would be
+overjoyed to do further work in both PLs and algorithms. I’d also be interested in work in
+areas that draw on ideas from both disciplines. As an example, the increasingly parallel and
+distributed nature of industrial computer systems motivates a host of problems in both PLs
+and algorithms. Helping engineers program these systems to take full advantage of their
+capabilities in a way that provably has desirable properties would be fascinating.
+I know I’d have the opportunity to explore any of my interests at Princeton. I’m particularly
+impressed by the wealth of system-level work being done in program verification and
+optimization. I’m excited to see that Liberty Research Group is investigating parallelization
+with an eye on the changing nature of computer architectures, and I find the work of Andrew
+Appel and his students on the end-to-end verification of low-level software to be intriguing.
+I’d also be really excited to work with a number of the theorists at Princeton. I find the work
+of Matt Weinberg in algorithmic game theory to be both interesting and important and have
+been wanting learn more about that field. I’m also drawn to the broad set of problems being
+tackled by Zeev Dvir, and the way they highlight connections between computer science and
+mathematics. Collectively the faculty at Princeton are doing world-class research in a wide
+variety of disciplines, and I’d love the opportunity to join them.
+Coming into college I didn’t think that graduate study would be right for me, but I could
+not have been more wrong. In the years since I’ve found a love for both computational theory
+and programming languages, and I look forward to graduate work as a way to continue my
+study of these disciplines while taking my turn in the vanguard of human knowledge.

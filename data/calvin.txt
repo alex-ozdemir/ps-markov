@@ -1,0 +1,76 @@
+Statement  of  Purpose  ­  Calvin  Leung  (UC  Berkeley  Department  of  Physics)
+I  was  motivated  to  pursue  a  scientific  career  in  the  summer  following  my  freshman  year
+at  Harvey  Mudd  College,  by  participating  in  the  physics  REU  at  UT  Rio  Grande  Valley.  Since
+then,  I  have  been  drawn  toward  a  diverse  palette  of  experimental  research  at  Harvey  Mudd,
+pursuing  projects  in  optical  testing,  astronomical  instrumentation,  and  a  structural  dynamics
+internship  at  SpaceX.  My  most  recent  research  experience  testing  Bell’s  Inequality  led  to  my
+current  interest  in  probing  fundamental  physics,  and  I  am  excited  to  explore  fields  that  offer
+different  methods  to  do  so,  such  as  experimental  cosmology  and  experimental  AMO  physics.
+At  UT  Rio  Grande  Valley  in  the  summer  of  2014,  I  worked  with  Dr.  Soumya  Mohanty,
+implementing  and  benchmarking  a  data­analysis  pipeline  for  estimating  gravitational  waveforms
+using  the  noisy  data  from  multiple  detectors.  This  work  eventually  resulted  in  a  peer­reviewed
+publication  (Leung,  SIAM  Undergraduate  Research  Online ,  2015).  I  enjoyed  the  rhythm  of
+learning  new  concepts  in  statistical  analysis  and  then  implementing  them  in  my  pipeline,  though
+my  understanding  of  general  relativity  as  a  first­year  undergraduate  was  limited.  When  our  REU
+group  got  the  chance  to  visit  LIGO,  I  was  amazed  by  the  engineering  marvel  of  the  massive
+detectors,  and  was  inspired  by  the  scientists’  dedication  to  their  then­uncertain  quest  to  detect
+gravitational  waves.  As  a  result  of  these  experiences,  I  became  excited  to  pursue  a  career  of
+academic  research.
+When  I  returned  to  Harvey  Mudd  in  Fall  2014,  I  declared  a  double  major  in  physics  and
+math  and  sought  further  research  opportunities  that  combined  the  excitement  of  hands­on
+experimentation  with  my  skills  in  data  analysis.  Asking  an  original  research  question  seemed
+impossible  without  an  adviser,  but  I  saw  an  opportunity  during  a  class  on  the  science  of
+photography  with  Dr.  Tom  Donnelly.  One  day,  while  learning  about  spatial  resolution  testing  and
+performing  the  many  measurements  that  it  required,  I  realized  that  I  could  measure  spatial
+resolution  via  transfer  functions,  as  was  done  in  circuit  analysis,  by  taking  the  Fourier  Transform
+of  a  step  response.  When  I  searched  the  resolution  testing  literature,  I  saw  that  this  method  was
+used  in  practice  with  specialized  hardware,  but  was  excited  nonetheless  to  see  if  I  could
+implement  it  for  myself  in  an  undergraduate  laboratory.  Dr.  Donnelly  lent  me  a  few  boxes  of
+hardware,  and  I  tinkered  for  the  next  three  semesters  on  an  unused  optical  table.  I  built  a  robust
+experimental  setup  that  allowed  me  to  excite  the  spatial  frequencies  of  interest,  using  a  pair  of
+razor  blades,  several  translation  stages,  and  a  light  source.  I  developed  a  novel  data  analysis
+technique  to  reduce  the  noise  in  my  measurements,  and  extracted  the  point  spread  function  of  a
+standard  DSLR  camera  using  MATLAB  data  analysis  code  I  had  written.  Finally,  I  demonstrated
+the  consistency  of  my  method  with  traditional  test­target  methods.  My  efforts  culminated  in  a
+first­author  publication  which  was  enthusiastically  accepted  for  publication  (Leung  &  Donnelly,
+Am.  J.  Phys.,  to  appear  in  2017),  and  was  a  major  factor  in  my  selection  for  the  Astronaut
+Scholarship.  Peer­reviewers  found  the  writing  to  be  “a  joy  to  read...and  technically  very  sound,”
+commenting  that  they  “encounter  a  manuscript  of  this  high  quality  only  about  once  every  ten
+years  or  so.”  I  was  humbled  (and  relieved)  that  my  first  attempt  to  formulate  and  solve  a  research
+problem  was  well­received,  and  that  my  attention  to  detail  was  acknowledged.
+In  addition  to  this  project,  during  the  summer  of  2015,  I  jumped  into  the  field  of
+structural  dynamics  through  an  internship  at  SpaceX,  where  I  designed  and  tested  a  novel  tuned
+mass  damper  for  the  Falcon  9  rocket.  My  goal  was  to  design  a  new  spring  mounting  system  for
+the  acoustic  absorber  panels  inside  the  rocket  such  that  the  panels  themselves  would  act  as  tuned
+mass  dampers  to  mitigate  structural  vibrations.  I  cycled  between  designing,  building,  and
+experimentally  testing  my  prototype,  learning  CAD  and  modal  analysis  along  the  way.  I
+developed  a  successful  toy  model  to  guide  my  design  choices,  and  learned  to  turn  a  concept  into
+optimized,  thoroughly­tested  flight  hardware.
+In  the  summer  of  2016,  I  joined  Dr.  Jason  Gallicchio’s  Cosmic  Bell  collaboration,  whose
+goal  is  to  test  Bell’s  Inequality  using  basis  choices  determined  by  uncorrelated  signals  of
+astronomical  origin.  I  am  currently  working  on  this  project  for  my  undergraduate  thesis.  I  have
+designed  and  built  an  instrument  which  converts  the  photons  from  distant  quasars  into  random
+bits  based  on  their  wavelength  to  be  used  in  tests  of  quantum  entanglement.  I  integrated  the
+optics  and  detector  instrumentation,  tested  the  instrument  on  the  40­inch  telescope  at  Table
+Mountain  Observatory,  and  wrote  Python  code  to  interface  with  astronomical  catalogs  to  select
+astronomical  sources  and  run  tests  of  statistical  randomness  on  the  data.  I  also  worked  remotely
+with  Anton  Zeilinger’s  quantum  optics  group  in  Vienna  and  Alan  Guth’s  theoretical  cosmology
+group  at  MIT,  developing  a  model  to  characterize  the  error  tolerances  in  the  “cosmic  random
+number  generator”  that  I  built.  My  work  in  the  Cosmic  Bell  collaboration   resulted  in
+co­authorship  on  a  publication  submitted  to  Physical  Review  Letters  (Handsteiner,  et.  al.  2016
+arXiv:1611.06985),  and  sparked  my  current  interest  in  testing  fundamental  physics.
+Through  my  experiences  at  Harvey  Mudd,   I  have  learned  to  ask  research  questions  and
+have  experienced  the  excitement  of  answering  them  for  myself,  working  both  independently  and
+within  an  interdisciplinary,  international  collaboration.  I  have  learned  to  communicate  my  work
+through  three  publications,  three  conference  presentations,  and  numerous  talks  I  have  given  to
+the  general  public  over  the  years.  Most  importantly,  I  have  learned  that  I  enjoy  experimental
+physics,  and  I  have  become  adept  at  rapidly  learning  skills  to  address  new  experimental
+challenges.  I  am  interested  in  exploring  areas  of  research  which  can  potentially  provide  insight
+into  fundamental  physics,  such  as  experimental  cosmology  and  experimental  atomic  physics.  At
+Berkeley,  William  Holzapfel  and  Adrian  Lee  are  involved  with  building  instruments  to  study  the
+rich  physics  of  the  cosmic  microwave  background,  and  many  other  faculty  members  are  working
+on  fundamental  questions  about  dark  matter  and  dark  energy  at  the  Berkeley  Center  for
+Cosmological  Physics.  On  the  AMO  side,  Holger  Muller  and  Dan  Stamper­Kurn  are  developing
+techniques  from  atomic  physics  to  probe  fundamental  physics.  In  graduate  school  and  beyond,  I
+hope  to  hone  my  research  skills  in  pursuit  of  an  academic  career  while  contributing  to
+cutting­edge  developments  in  these  areas.
