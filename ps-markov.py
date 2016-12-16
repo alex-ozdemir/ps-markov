@@ -122,7 +122,7 @@ except:
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/raw")
 def hello():
     global ngrams, d, l, n
     out = gen(ngrams, d, l)
@@ -132,6 +132,17 @@ def hello():
     print('Written')
     n += 1
     return out
+
+@app.route("/")
+def hello():
+    global ngrams, d, l, n
+    out = gen(ngrams, d, l)
+    print('Generated')
+    with open('%s/%05d' % (OUTPUT, n), 'w') as f:
+        f.write(out)
+    print('Written')
+    n += 1
+    return render_template('statement.html', statement=out)
 
 app.run(host='134.173.42.100', port=9000)
 
