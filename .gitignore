@@ -1,4 +1,5 @@
 output
+**/target
 data
 nohup.out
 *.tar.xz
