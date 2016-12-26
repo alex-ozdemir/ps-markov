@@ -27,6 +27,9 @@ impl SExpr {
     fn add_child(&mut self, child: SExpr) {
         self.children.push(child)
     }
+    pub fn is_leaf(&self) -> bool {
+        self.children.is_empty()
+    }
 }
 
 impl fmt::Debug for SExpr {

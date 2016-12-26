@@ -2,4 +2,6 @@ output
 **/target
 data
 nohup.out
+*.tar.gz
 *.tar.xz
+**/.*.swp
