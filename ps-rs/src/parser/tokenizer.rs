@@ -79,6 +79,7 @@ impl<I: Iterator<Item = char>> Iterator for LispTokenizer<I> {
     }
 }
 
+#[cfg(test)]
 mod tests {
 
     use super::*;
