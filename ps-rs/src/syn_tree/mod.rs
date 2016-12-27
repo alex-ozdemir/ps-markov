@@ -29,6 +29,12 @@ impl SynTree {
         self.children.push(child)
     }
 
+    /// A representation of the fork in the tree at the root of this tree
+    pub fn fork(&self) -> (&str, Vec<&str>) {
+        (self.head.as_str(), self.children.iter().map(|child| child.head.as_str()).collect())
+    }
+
+
     /// Is this node a leaf (a.k.a. a "terminal")?
     pub fn is_leaf(&self) -> bool {
         self.children.is_empty()

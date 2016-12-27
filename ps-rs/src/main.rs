@@ -1,19 +1,22 @@
-#![feature(conservative_impl_trait)]
-#![feature(insert_str)]
-#![feature(plugin)]
+#![feature(insert_str, conservative_impl_trait, proc_macro, plugin)]
 #![plugin(rocket_codegen)]
 
-#[macro_use]
-extern crate lazy_static;
+#[macro_use] extern crate lazy_static;
+#[macro_use] extern crate serde_derive;
+extern crate serde_json;
 extern crate rocket;
+extern crate rocket_contrib;
 extern crate rand;
 
 use rand::distributions::{IndependentSample, Range};
+
+use rocket_contrib::Template;
 
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 use std::collections::HashMap;
+
 
 mod syn_tree;
 
@@ -49,11 +52,7 @@ lazy_static! {
     };
 }
 
-#[get("/raw")]
-fn raw() -> String {
-    // Initialize RNG for sentence generation
-    let mut rng = rand::thread_rng();
-
+fn generate<R: rand::Rng>(rng: &mut R) -> SynTree {
     // Get the distributions
     let (ref distro, ref fallback_distro) = *DISTRIBUTIONS;
 
@@ -62,20 +61,49 @@ fn raw() -> String {
     let mut generated =
         conditioned_on_ancestors_and_last::generate_expr_with_last_term(distro,
                                                                         fallback_distro,
-                                                                        &mut rng);
+                                                                        rng);
 
     // Strip out annotations
     conditioned_on_ancestors::strip_parents(&mut generated);
 
     generated.fix_caps();
+    generated
+}
+
+#[get("/tree")]
+fn tree() -> String {
+    let generated = generate(&mut rand::thread_rng());
+
+    println!("\n{}\n\n{:?}", generated, generated);
+
+    format!("{:?}", generated)
+}
+
+#[get("/raw")]
+fn raw() -> String {
+    let generated = generate(&mut rand::thread_rng());
 
     println!("\n{}\n\n{:?}", generated, generated);
 
     format!("{}", generated)
 }
 
+#[get("/formatted")]
+fn formatted() -> Template {
+    let generated = generate(&mut rand::thread_rng());
+
+    println!("\n{}\n\n{:?}", generated, generated);
+
+    #[derive(Serialize)]
+    struct TemplateContext {
+        statement: String
+    }
+
+    Template::render("statement", &TemplateContext { statement: format!("{}", generated) })
+}
+
 pub fn main() {
-    rocket::ignite().mount("/", routes![raw]).launch();
+    rocket::ignite().mount("/", routes![raw, tree, formatted]).launch();
 }
 
 fn parse_files<P: AsRef<Path>>(path: P) -> Vec<SynTree> {
@@ -94,10 +122,6 @@ fn parse_file<P: AsRef<Path>>(path: P) -> Vec<SynTree> {
     syn_tree::parse(contents.chars()).expect("failed parse").children
 }
 
-fn fork(expr: &SynTree) -> (&str, Vec<&str>) {
-    (expr.head.as_str(), expr.children.iter().map(|child| child.head.as_str()).collect())
-}
-
 pub struct Distribution<'a> {
     // Stores (All possible child lists, their weights, total weight range) for each parent
     parent_to_children_pdf: HashMap<&'a str, (Vec<Vec<&'a str>>, Vec<usize>, Range<usize>)>,
@@ -107,8 +131,8 @@ impl<'a> Distribution<'a> {
     fn new(trees: &'a Vec<SynTree>) -> Self {
         let mut parent_to_children_pdf: HashMap<&str, HashMap<Vec<&str>, usize>> = HashMap::new();
         trees.iter()
-            .flat_map(|x| x)
-            .map(fork)
+            .flat_map(|t| t)
+            .map(|t| t.fork())
             .map(|(parent, children)| {
                 let children_pdf = parent_to_children_pdf.entry(parent)
                     .or_insert_with(HashMap::new);
