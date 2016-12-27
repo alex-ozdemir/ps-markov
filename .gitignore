@@ -5,3 +5,4 @@ nohup.out
 *.tar.gz
 *.tar.xz
 **/.*.swp
+*.bk
