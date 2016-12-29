@@ -1,8 +1,10 @@
 #![feature(insert_str, conservative_impl_trait, proc_macro, plugin)]
 #![plugin(rocket_codegen)]
 
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
 extern crate rocket;
 extern crate rocket_contrib;
@@ -15,58 +17,69 @@ use rocket_contrib::Template;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
+use std::hash::Hash;
 
 
 mod syn_tree;
 
-use syn_tree::SynTree;
+use syn_tree::{Tree, TreeTransformer, TreeDataRef, Tag};
+
+type S = String;
+type SynTree = Tree<Tag, S>;
+type ParentSynTree<'a> = Tree<Vec<Tag>, &'a S>;
+type PrecursorSynTree<'a> = Tree<(Vec<Tag>, Vec<&'a S>), &'a S>;
+
+type ParentDistribution<'a> = Distribution<'a, Vec<Tag>, &'a S>;
+type PrecursorDistribution<'a> = Distribution<'a, (Vec<Tag>, Vec<&'a S>), &'a S>;
+
+const N_PARENTS: usize = 4;
+const N_PRECURSORS: usize = 1;
 
 // We initialize the distributions we use to generate random sentences
+// We do it with lazy static so that the distributions can be seen as living for 'static
 lazy_static! {
-    static ref TREES: (Vec<SynTree>, Vec<SynTree>) = {
+    static ref BASE_TREE: Vec<SynTree> = parse_files("../data/parsed");
+    static ref TREES: (Vec<ParentSynTree<'static>>, Vec<PrecursorSynTree<'static>>) = {
         // Parse the trees
-        let mut trees = parse_files("../data/parsed");
+        let trees = &*BASE_TREE as *const Vec<SynTree>;
 
         // Annotate nodes with ancestral syntactic nodes
-        trees.iter_mut().map(|t| conditioned_on_ancestors::record_parents(t, 4)).count();
+        let ref_t : &'static Vec<SynTree> = unsafe { trees.as_ref().unwrap() };
+        let parent_trees = ref_t.iter()
+                                .map(|t| conditioned_on_ancestors::record_parents(t, N_PARENTS))
+                                .collect();
 
-        // Annotate nodes with previous (precursor) terminal
-        let mut trees_with_precursors = trees.clone();
-        trees_with_precursors.iter_mut()
-            .map(conditioned_on_ancestors_and_last::record_precursor)
-            .count();
+        // Annotate nodes with parents and previous (precursor) terminals
+        let parents_and_precursor_trees = ref_t.iter()
+            .map(|t| conditioned_on_ancestors_and_last::record_precursor(t, N_PARENTS, N_PRECURSORS))
+            .collect();
 
-        (trees, trees_with_precursors)
+        (parent_trees, parents_and_precursor_trees)
     };
-    static ref DISTRIBUTIONS: (Distribution<'static>, Distribution<'static>) = {
-        let (ref trees, ref trees_with_precursors) = *TREES;
+    static ref DISTRIBUTIONS: (ParentDistribution<'static>, PrecursorDistribution<'static>) = {
+        let (ref parent_trees, ref precursor_trees) = *TREES;
 
         // Generate distribution
-        let fallback_distro = Distribution::new(trees);
+        let fallback_distro = Distribution::new(parent_trees);
 
         // Generate distribution
-        let distro = Distribution::new(trees_with_precursors);
+        let distro = Distribution::new(precursor_trees);
 
-        (distro, fallback_distro)
+        (fallback_distro, distro)
     };
 }
 
-fn generate<R: rand::Rng>(rng: &mut R) -> SynTree {
+fn generate<R: rand::Rng>(rng: &mut R) -> Tree<Tag, &'static String> {
     // Get the distributions
-    let (ref distro, ref fallback_distro) = *DISTRIBUTIONS;
+    let (ref fallback_distro, ref distro) = *DISTRIBUTIONS;
 
     // Generate a sentence
-    // let mut generated = conditioned_on_ancestors::generate_expr(distro, &mut rng);
-    let mut generated =
-        conditioned_on_ancestors_and_last::generate_expr_with_last_term(distro,
-                                                                        fallback_distro,
-                                                                        rng);
+    let generated = conditioned_on_ancestors_and_last::generate_expr(distro,
+                                                                     fallback_distro,
+                                                                     N_PRECURSORS,
+                                                                     rng);
 
-    // Strip out annotations
-    conditioned_on_ancestors::strip_parents(&mut generated);
-
-    generated.fix_caps();
     generated
 }
 
@@ -88,18 +101,20 @@ fn raw() -> String {
     format!("{}", generated)
 }
 
+/// Structure for rendering the statement template
+#[derive(Serialize)]
+struct TemplateContext {
+    statement: String,
+}
+
 #[get("/formatted")]
 fn formatted() -> Template {
     let generated = generate(&mut rand::thread_rng());
 
     println!("\n{}\n\n{:?}", generated, generated);
 
-    #[derive(Serialize)]
-    struct TemplateContext {
-        statement: String
-    }
-
-    Template::render("statement", &TemplateContext { statement: format!("{}", generated) })
+    Template::render("statement",
+                     &TemplateContext { statement: format!("{}", generated) })
 }
 
 pub fn main() {
@@ -119,20 +134,20 @@ fn parse_file<P: AsRef<Path>>(path: P) -> Vec<SynTree> {
     contents.push_str("(ALL ");
     file.read_to_string(&mut contents).expect("Couldn't read file");
     contents.push(')');
-    syn_tree::parse(contents.chars()).expect("failed parse").children
+    syn_tree::parse(contents.chars()).expect("failed parse").unwrap_as_inner().1
 }
 
-pub struct Distribution<'a> {
-    // Stores (All possible child lists, their weights, total weight range) for each parent
-    parent_to_children_pdf: HashMap<&'a str, (Vec<Vec<&'a str>>, Vec<usize>, Range<usize>)>,
+pub struct Distribution<'a, I: 'a + Eq + Hash, J: 'a> {
+    parent_to_children_pdf: HashMap<&'a I,
+                                    (Vec<Vec<TreeDataRef<'a, I, J>>>, Vec<usize>, Range<usize>)>,
 }
 
-impl<'a> Distribution<'a> {
-    fn new(trees: &'a Vec<SynTree>) -> Self {
-        let mut parent_to_children_pdf: HashMap<&str, HashMap<Vec<&str>, usize>> = HashMap::new();
+impl<'a, I: Eq + Hash, L: Eq + Hash> Distribution<'a, I, L> {
+    fn new(trees: &'a Vec<Tree<I, L>>) -> Self {
+        let mut parent_to_children_pdf: HashMap<&'a I, HashMap<_, usize>> = HashMap::new();
         trees.iter()
             .flat_map(|t| t)
-            .map(|t| t.fork())
+            .filter_map(|t| t.fork())
             .map(|(parent, children)| {
                 let children_pdf = parent_to_children_pdf.entry(parent)
                     .or_insert_with(HashMap::new);
@@ -141,23 +156,24 @@ impl<'a> Distribution<'a> {
             .count();
         Distribution {
             parent_to_children_pdf: parent_to_children_pdf.into_iter()
-                .map(|(parent, children_cdf)| {
-                    let (children, counts): (_, Vec<_>) = children_cdf.into_iter().unzip();
+                .map(|(parent, children_pdf): (&'a I,
+                                               HashMap<Vec<TreeDataRef<'a, I, L>>, usize>)| {
+                    let (children, counts): (Vec<Vec<TreeDataRef<'a, I, L>>>, Vec<usize>) =
+                        children_pdf.into_iter().unzip();
                     let mut acc = 0usize;
-                    let cumulative = counts.iter()
+                    let cumulative: Vec<usize> = counts.iter()
                         .map(|i| {
                             acc += *i;
                             acc
                         })
                         .collect();
-                    (parent,
-                     (children, cumulative, Range::new(1, counts.iter().sum::<usize>() + 1)))
+                    (parent, (children, cumulative, Range::new(1, acc + 1)))
                 })
                 .collect(),
         }
     }
 
-    fn choose<R: rand::Rng>(&self, parent: &str, rng: &mut R) -> Option<&Vec<&'a str>> {
+    fn choose<R: rand::Rng>(&self, parent: &I, rng: &mut R) -> Option<&Vec<TreeDataRef<'a, I, L>>> {
         self.parent_to_children_pdf.get(parent).map(|&(ref children, ref weights, ref range)| {
             let idx = match weights.as_slice().binary_search(&range.ind_sample(rng)) {
                 Err(i) => i,
@@ -169,122 +185,206 @@ impl<'a> Distribution<'a> {
 }
 
 mod conditioned_on_ancestors {
-    use super::{Distribution, SynTree, rand};
+    use super::{Distribution, ParentDistribution, SynTree, rand, Tree, TreeTransformer,
+                TreeDataRef, Hash, Tag};
 
-    pub fn strip_parents(expr: &mut SynTree) {
-        expr.head.find("_").map(|idx| {
-            expr.head.truncate(idx);
-        });
-        for child in &mut expr.children {
-            strip_parents(child);
-        }
+
+    struct ParentRecorder<'a, I: 'a> {
+        parents: Vec<&'a I>,
+        n_parents: usize,
     }
 
-    pub fn record_parents(expr: &mut SynTree, n_parents: usize) {
-        record_parents_with_parent(expr, &mut vec![], n_parents)
-    }
-
-    fn record_parents_with_parent<'a>(expr: &'a mut SynTree,
-                                      parents: &mut Vec<&'a str>,
-                                      n_parents: usize) {
-        let n = expr.head.len();
-        if !expr.is_leaf() {
-            for parent in parents.iter().rev().take(n_parents) {
-                expr.head.push_str("_");
-                expr.head.push_str(parent);
+    impl<'a, I> ParentRecorder<'a, I> {
+        fn new(n_parents: usize) -> Self {
+            ParentRecorder {
+                parents: vec![],
+                n_parents: n_parents,
             }
         }
-        parents.push(&expr.head[..n]);
-        for child in &mut expr.children {
-            record_parents_with_parent(child, parents, n_parents);
+    }
+
+    impl<'a, I: Copy, L: 'a> TreeTransformer<'a, I, L> for ParentRecorder<'a, I> {
+        type OutputI = Vec<I>;
+        type OutputL = &'a L;
+        fn pre_inner_node(&mut self, data: &'a I) {
+            // Before transforming each inner node, push it on
+            self.parents.push(data);
         }
-        parents.pop();
+        fn make_inner_node_data(&mut self, _: &'a I) -> Self::OutputI {
+            // Read off the last n ancestors
+            self.parents.iter().rev().take(self.n_parents).cloned().cloned().collect()
+        }
+        fn post_inner_node(&mut self, _: &'a I) {
+            self.parents.pop();
+        }
+        fn make_leaf_data(&mut self, data: &'a L) -> Self::OutputL {
+            data
+        }
+    }
+
+    pub fn strip_parents<'a>(tree: Tree<&Vec<Tag>, &'a String>) -> Tree<Tag, &'a String> {
+        match tree {
+            Tree::InnerNode(parent_list, children) => {
+                Tree::InnerNode(*parent_list.into_iter().last().unwrap(),
+                                children.into_iter().map(strip_parents).collect())
+            }
+            Tree::Leaf(word) => Tree::Leaf(word),
+        }
+    }
+
+    pub fn record_parents(expr: &SynTree, n_parents: usize) -> Tree<Vec<Tag>, &String> {
+        expr.transform(&mut ParentRecorder::new(n_parents))
     }
 
     #[allow(dead_code)]
-    pub fn generate_expr<R: rand::Rng>(distro: &Distribution, rng: &mut R) -> SynTree {
-        generate_expr_from(String::from("ROOT"), distro, rng)
+    pub fn generate_expr<'a, R: rand::Rng>(distro: &ParentDistribution<'a>,
+                                           rng: &mut R)
+                                           -> Tree<Tag, &'a String> {
+        let root_vec = vec![Tag::ROOT];
+        strip_parents(generate_expr_from(&root_vec, distro, rng))
     }
 
-    fn generate_expr_from<R: rand::Rng>(root: String,
-                                        distro: &Distribution,
-                                        rng: &mut R)
-                                        -> SynTree {
-        let children_heads = distro.choose(root.as_str(), rng).expect("Failed choice!");
+    pub fn generate_expr_from<'a, 'b: 'a, I: Eq + Hash, L: Eq + Hash, R: rand::Rng>
+        (root: &'a I,
+         distro: &Distribution<'b, I, &'b L>,
+         rng: &mut R)
+         -> Tree<&'a I, &'b L> {
+        let children_heads = distro.choose(&root, rng).expect("Failed choice!");
         let children = children_heads.iter()
-            .cloned()
-            .map(String::from)
-            .map(|string| generate_expr_from(string, distro, rng))
+            .map(|data| match data {
+                &TreeDataRef::InnerNodeData(ref internal) => {
+                    generate_expr_from(internal.clone(), distro, rng)
+                }
+                &TreeDataRef::LeafData(data) => Tree::Leaf(*data),
+            })
             .collect();
-        SynTree::new(root, children)
+        Tree::InnerNode(root, children)
     }
 }
 
 mod conditioned_on_ancestors_and_last {
-    use super::{Distribution, SynTree, rand};
+    use super::{ParentDistribution, PrecursorDistribution, rand, Tree, TreeTransformer, VecDeque,
+                Tag, Distribution, TreeDataRef};
 
-    pub fn record_precursor(expr: &mut SynTree) {
-        let mut prior = None;
-        for (head, is_leaf) in expr {
-            if is_leaf {
-                prior = Some(head.as_str());
-            } else {
-                prior.as_ref().map(|prior_str| {
-                    head.push('>');
-                    head.push_str(prior_str);
-                });
+    struct PrecursorRecorder<'a, I: 'a, L: 'a> {
+        terminals: VecDeque<&'a L>,
+        n_terminals: usize,
+        parents: Vec<&'a I>,
+        n_parents: usize,
+    }
+
+    impl<'a, I, L> PrecursorRecorder<'a, I, L> {
+        fn new(n_parents: usize, n_terminals: usize) -> Self {
+            PrecursorRecorder {
+                terminals: VecDeque::new(),
+                n_terminals: n_terminals,
+                parents: vec![],
+                n_parents: n_parents,
             }
         }
     }
 
-    #[allow(dead_code)]
-    pub fn generate_expr_with_last_term<R: rand::Rng>(distro: &Distribution,
-                                                      fallback_distro: &Distribution,
-                                                      rng: &mut R)
-                                                      -> SynTree {
-        generate_expr_from_and_last_term(String::from("ROOT"), None, distro, fallback_distro, rng).0
+    impl<'a, I: Copy, L> TreeTransformer<'a, I, L> for PrecursorRecorder<'a, I, L> {
+        type OutputI = (Vec<I>, Vec<&'a L>);
+        type OutputL = &'a L;
+        fn pre_inner_node(&mut self, data: &'a I) {
+            // Before transforming each inner node, push it on
+            self.parents.push(data);
+        }
+        fn make_inner_node_data(&mut self, _: &'a I) -> Self::OutputI {
+            // Read off the last n ancestors
+            (self.parents.iter().rev().take(self.n_parents).cloned().cloned().collect(),
+             self.terminals.iter().cloned().collect())
+        }
+        fn post_inner_node(&mut self, _: &'a I) {
+            self.parents.pop();
+        }
+        fn make_leaf_data(&mut self, data: &'a L) -> Self::OutputL {
+            data
+        }
+        fn post_leaf(&mut self, data: &'a L) {
+            self.terminals.push_front(data);
+            if self.terminals.len() < self.n_terminals {
+                self.terminals.pop_back();
+            }
+        }
     }
 
-    fn generate_expr_from_and_last_term<R: rand::Rng>(mut root: String,
-                                                      mut last_term: Option<String>,
-                                                      distro: &Distribution,
-                                                      fallback_distro: &Distribution,
-                                                      rng: &mut R)
-                                                      -> (SynTree, Option<String>) {
-        // If the root contains an annotated precursor terminal, remove it
-        root.rfind(">").map(|index| root.truncate(index));
-
-        // Construct a lookup string with the appropriate annoted precursor terminal
-        let mut lookup_root = root.clone();
-        last_term.as_ref().map(|last| {
-            lookup_root.push('>');
-            lookup_root.push_str(last.as_str());
-        });
-
-        // Lookup what the heads of the children _should_ be
-        let children_heads = distro.choose(lookup_root.as_str(), rng).unwrap_or_else(|| {
-            // Fallback to a lookup uninformed by the precursor terminal if necessary
-            fallback_distro.choose(root.as_str(), rng).unwrap()
-        });
-
-        // Generate all of the children, keeping the precursor terminal up-to-date
-        let mut children = Vec::new();
-        for string in children_heads.iter().cloned().map(String::from) {
-            let (expr, new_term) = generate_expr_from_and_last_term(string,
-                                                                    last_term.take(),
-                                                                    distro,
-                                                                    fallback_distro,
-                                                                    rng);
-            last_term = new_term;
-            children.push(expr);
+    pub fn strip_precursors<'a>(tree: Tree<&Vec<Tag>, &'a String>) -> Tree<Tag, &'a String> {
+        match tree {
+            Tree::InnerNode(parent_list, children) => {
+                Tree::InnerNode(*parent_list.iter().last().unwrap(),
+                                children.into_iter().map(strip_precursors).collect())
+            }
+            Tree::Leaf(word) => Tree::Leaf(word),
         }
+    }
 
-        let generated = SynTree::new(root, children);
-        let terminal = if generated.is_leaf() {
-            Some(generated.head.clone())
-        } else {
-            last_term
-        };
-        (generated, terminal)
+    pub fn record_precursor<'a>(expr: &'a Tree<Tag, String>,
+                                n_parents: usize,
+                                n_terminals: usize)
+                                -> Tree<(Vec<Tag>, Vec<&'a String>), &'a String> {
+        expr.transform(&mut PrecursorRecorder::new(n_parents, n_terminals))
+    }
+
+    #[allow(dead_code)]
+    pub fn generate_expr<'a, R: rand::Rng>(distro: &PrecursorDistribution<'a>,
+                                           fallback_distro: &ParentDistribution<'a>,
+                                           n_terminals: usize,
+                                           rng: &mut R)
+                                           -> Tree<Tag, &'a String> {
+        let root_vec = vec![Tag::ROOT];
+        let mut terminals = VecDeque::new();
+        strip_precursors(generate_expr_from(&root_vec,
+                                            &mut terminals,
+                                            n_terminals,
+                                            distro,
+                                            fallback_distro,
+                                            rng))
+    }
+
+    pub fn generate_expr_from<'a, 'b, R>(root: &'a Vec<Tag>,
+                                         terminals: &mut VecDeque<&'b String>,
+                                         n_terminals: usize,
+                                         distro: &Distribution<'b,
+                                                               (Vec<Tag>, Vec<&'b String>),
+                                                               &'b String>,
+                                         fallback_distro: &Distribution<'b, Vec<Tag>, &'b String>,
+                                         rng: &mut R)
+                                         -> (Tree<&'a Vec<Tag>, &'b String>)
+        where 'b: 'a,
+              R: rand::Rng
+    {
+        let root_with_precursor = (root.clone(), terminals.iter().cloned().collect());
+        let children_heads: Vec<TreeDataRef<Vec<Tag>, &String>> =
+            distro.choose(&root_with_precursor, rng)
+                .map(|data_refs| {
+                    data_refs.into_iter()
+                        .map(|data_ref| data_ref.map_inner(|inner| &inner.0))
+                        .collect()
+                })
+                .unwrap_or_else(|| {
+                    fallback_distro.choose(root, rng).expect("Failed selection").clone()
+                });
+        let children = children_heads.iter()
+            .map(|data| match data {
+                &TreeDataRef::InnerNodeData(ref internal) => {
+                    generate_expr_from(&internal,
+                                       terminals,
+                                       n_terminals,
+                                       distro,
+                                       fallback_distro,
+                                       rng)
+                }
+                &TreeDataRef::LeafData(data) => {
+                    terminals.push_front(data);
+                    if terminals.len() < n_terminals {
+                        terminals.pop_back();
+                    }
+                    Tree::Leaf(*data)
+                }
+            })
+            .collect();
+        Tree::InnerNode(root, children)
     }
 }

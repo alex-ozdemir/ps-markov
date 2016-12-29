@@ -3,8 +3,173 @@ mod parser;
 
 use self::tokenizer::{tokenize, LispToken};
 use std::fmt;
+use std::slice;
 
-pub use self::parser::parse;
+pub use self::parser::{parse, Tag};
+
+/// A tree which stores different types at leaves and internal nodes
+#[derive(PartialEq, Eq, Clone)]
+pub enum Tree<I, L> {
+    /// An inner node's data and children
+    InnerNode(I, Vec<Tree<I, L>>),
+    /// A leaf's data
+    Leaf(L),
+}
+
+/// A reference to data stored at some tree node.
+#[derive(PartialEq, Eq, Hash)]
+pub enum TreeDataRef<'a, I: 'a, L: 'a> {
+    InnerNodeData(&'a I),
+    LeafData(&'a L),
+}
+
+/// We implement `Clone` and `Copy` by hand so that the bounds are correct.
+impl<'a, I, L> Clone for TreeDataRef<'a, I, L> {
+    fn clone(&self) -> Self {
+        match self {
+            &TreeDataRef::InnerNodeData(data) => TreeDataRef::InnerNodeData(data),
+            &TreeDataRef::LeafData(data) => TreeDataRef::LeafData(data),
+        }
+    }
+}
+
+impl<'a, I, L> Copy for TreeDataRef<'a, I, L> {}
+
+
+impl<'a, I, L> TreeDataRef<'a, I, L> {
+    pub fn map_inner<J, F: FnOnce(&'a I) -> &'a J>(self, f: F) -> TreeDataRef<'a, J, L> {
+        match self {
+            TreeDataRef::InnerNodeData(data) => TreeDataRef::InnerNodeData(f(data)),
+            TreeDataRef::LeafData(data) => TreeDataRef::LeafData(data),
+        }
+    }
+}
+
+impl<'a, I, L> Tree<&'a I, &'a L> {
+    /// A representation of the fork in the tree at the root of this tree
+    pub fn fork_copy(&self) -> Option<(&'a I, Vec<TreeDataRef<'a, I, L>>)> {
+        match self {
+            &Tree::InnerNode(ref data, ref children) => {
+                Some((data, children.iter().map(Self::data).collect()))
+            }
+            &Tree::Leaf(_) => None,
+        }
+    }
+
+    pub fn data(&self) -> TreeDataRef<'a, I, L> {
+        match self {
+            &Tree::InnerNode(data, _) => TreeDataRef::InnerNodeData(data),
+            &Tree::Leaf(data) => TreeDataRef::LeafData(data),
+        }
+    }
+}
+
+impl<I, L> Tree<I, L> {
+    /// A representation of the fork in the tree at the root of this tree
+    pub fn fork(&self) -> Option<(&I, Vec<TreeDataRef<I, L>>)> {
+        match self {
+            &Tree::InnerNode(ref data, ref children) => {
+                Some((data, children.iter().map(Self::data_ref).collect()))
+            }
+            &Tree::Leaf(_) => None,
+        }
+    }
+
+    pub fn data_ref(&self) -> TreeDataRef<I, L> {
+        match self {
+            &Tree::InnerNode(ref data, _) => TreeDataRef::InnerNodeData(data),
+            &Tree::Leaf(ref data) => TreeDataRef::LeafData(data),
+        }
+    }
+
+    pub fn unwrap_as_inner(self) -> (I, Vec<Tree<I, L>>) {
+        match self {
+            Tree::InnerNode(data, children) => (data, children),
+            Tree::Leaf(_) => panic!("Tried to unwrap leaf as inner node"),
+        }
+    }
+
+    pub fn children_iter(&self) -> Option<slice::Iter<Tree<I, L>>> {
+        match self {
+            &Tree::InnerNode(_, ref children) => Some(children.iter()),
+            &Tree::Leaf(_) => None,
+        }
+    }
+
+    /// Iterates over the terminals.
+    pub fn terminal_iter<'a>(&'a self) -> impl Iterator<Item = &'a L> {
+        self.into_iter().filter_map(|expr| {
+            match expr {
+                &Tree::InnerNode(_, _) => None,
+                &Tree::Leaf(ref data) => Some(data),
+            }
+        })
+    }
+
+    /// Is this node a leaf (a.k.a. a "terminal")?
+    pub fn is_leaf(&self) -> bool {
+        match self {
+            &Tree::InnerNode(_, _) => false,
+            &Tree::Leaf(_) => true,
+        }
+    }
+
+    pub fn transform<'a, T: TreeTransformer<'a, I, L>>(&'a self,
+                                                       t: &mut T)
+                                                       -> Tree<T::OutputI, T::OutputL> {
+        match self {
+            &Tree::InnerNode(ref data, ref children) => {
+                t.pre_inner_node(data);
+                let new_data = t.make_inner_node_data(data);
+                let new_children = children.into_iter().map(|child| child.transform(t)).collect();
+                t.post_inner_node(data);
+                Tree::InnerNode(new_data, new_children)
+            }
+            &Tree::Leaf(ref data) => {
+                t.pre_leaf(data);
+                let new_data = t.make_leaf_data(data);
+                t.post_leaf(data);
+                Tree::Leaf(new_data)
+            }
+        }
+    }
+}
+
+impl<'a, I, L> IntoIterator for &'a Tree<I, L> {
+    type Item = &'a Tree<I, L>;
+    type IntoIter = PreOrderTreeIter<'a, I, L>;
+    fn into_iter(self) -> Self::IntoIter {
+        PreOrderTreeIter { stack: vec![self] }
+    }
+}
+
+pub struct PreOrderTreeIter<'a, I: 'a, L: 'a> {
+    stack: Vec<&'a Tree<I, L>>,
+}
+
+impl<'a, I, L> Iterator for PreOrderTreeIter<'a, I, L> {
+    type Item = &'a Tree<I, L>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.stack.pop().map(|next| {
+            next.children_iter().map(|iter| self.stack.extend(iter.rev()));
+            next
+        })
+    }
+}
+
+#[allow(unused_variables)]
+pub trait TreeTransformer<'a, I, L> {
+    type OutputI;
+    type OutputL;
+
+    fn make_inner_node_data(&mut self, data: &'a I) -> Self::OutputI;
+    fn make_leaf_data(&mut self, data: &'a L) -> Self::OutputL;
+    fn pre_inner_node(&mut self, data: &'a I) {}
+    fn post_inner_node(&mut self, data: &'a I) {}
+    fn pre_leaf(&mut self, data: &'a L) {}
+    fn post_leaf(&mut self, data: &'a L) {}
+}
+
 
 #[derive(PartialEq, Eq, Clone)]
 pub struct SynTree {
@@ -40,15 +205,6 @@ impl SynTree {
         self.children.is_empty()
     }
 
-    /// Is this node an internal proper-noun node?
-    pub fn is_proper(&self) -> bool {
-        self.head.as_str() == "NNP" || self.head.as_str() == "NNPS"
-    }
-
-    /// Should this node always be capitalized?
-    pub fn always_capitalize(&self) -> bool {
-        self.head.as_str() == "I"
-    }
 
     /// Iterates over the terminals.
     pub fn terminal_iter<'a>(&'a self) -> impl Iterator<Item = &'a str> {
@@ -59,6 +215,16 @@ impl SynTree {
                 None
             }
         })
+    }
+
+    // Is this node an internal proper-noun node?
+    fn is_proper(&self) -> bool {
+        self.head.as_str() == "NNP" || self.head.as_str() == "NNPS"
+    }
+
+    // Should this node always be capitalized?
+    fn always_capitalize(&self) -> bool {
+        self.head.as_str() == "I"
     }
 
     /// Capitalize this like a sentence
@@ -94,6 +260,42 @@ impl SynTree {
                 force_first = false;
             }
         }
+    }
+}
+
+impl<I: AsRef<str>, L: AsRef<str>> fmt::Debug for Tree<I, L> {
+    /// Format it as a tree
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &Tree::InnerNode(ref data, ref children) => {
+                try!(write!(f, "({}", data.as_ref()));
+                for child in children {
+                    try!(write!(f, " {:?}", child));
+                }
+                write!(f, ")")
+            }
+            &Tree::Leaf(ref data) => write!(f, "{}", data.as_ref()),
+        }
+    }
+}
+
+impl<I: AsRef<str>, L: AsRef<str>> fmt::Display for Tree<I, L> {
+    /// Format it as a sentance
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn requires_pre_space(terminal: &str) -> bool {
+            terminal.chars().next().map(char::is_alphabetic).unwrap_or(false)
+        }
+
+        let mut first = true;
+
+        for terminal in self.terminal_iter() {
+            if requires_pre_space(terminal.as_ref()) && !first {
+                try!(write!(f, " "));
+            }
+            try!(write!(f, "{}", terminal.as_ref()));
+            first = false;
+        }
+        Ok(())
     }
 }
 
@@ -185,5 +387,14 @@ impl<'a> Iterator for HeadPreOrderIterMut<'a> {
             self.stack.extend(next.children.iter_mut().rev());
             (&mut next.head, is_leaf)
         })
+    }
+}
+
+pub fn convert(tree: SynTree) -> Tree<Tag, String> {
+    if tree.children.len() == 0 {
+        Tree::Leaf(tree.head)
+    } else {
+        Tree::InnerNode(Tag::from_str(tree.head.as_str()),
+                        tree.children.into_iter().map(convert).collect())
     }
 }
