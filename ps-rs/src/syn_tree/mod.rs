@@ -236,6 +236,28 @@ impl SynTree {
         self.fix_caps_with_force(true)
     }
 
+    /// Performs the following substitutions
+    pub fn fix_terminals(&mut self) {
+        self.terminal_sub("\\/", '/');
+        self.terminal_sub("-LBR-", '(');
+        self.terminal_sub("-RBR-", ')');
+        self.terminal_sub("``", '“');
+        self.terminal_sub("''", '”');
+        self.terminal_sub("`", '‘');
+        self.terminal_sub("'", '’');
+    }
+
+    fn terminal_sub(&mut self, from: &str, to: char) {
+        for (string, terminal) in self {
+            if terminal {
+                if string.as_str() == from {
+                    string.clear();
+                    string.push(to);
+                }
+            }
+        }
+    }
+
     /// Changes the capitalization in the SynTree so that the first word is capitalized iff
     /// `force_first` is, proper nouns are, and the rest are not.
     ///
@@ -318,7 +340,7 @@ impl fmt::Display for SynTree {
     /// Format it as a sentance
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fn requires_pre_space(terminal: &str) -> bool {
-            terminal.chars().next().map(char::is_alphabetic).unwrap_or(false)
+            terminal.chars().next().map(char::is_alphanumeric).unwrap_or(false)
         }
 
         let mut first = true;
