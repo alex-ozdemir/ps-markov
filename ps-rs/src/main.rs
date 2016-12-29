@@ -28,6 +28,8 @@ lazy_static! {
         // Parse the trees
         let mut trees = parse_files("../data/parsed");
 
+        trees.iter_mut().map(|t| t.fix_terminals()).count();
+
         // Annotate nodes with ancestral syntactic nodes
         trees.iter_mut().map(|t| conditioned_on_ancestors::record_parents(t, 4)).count();
 
