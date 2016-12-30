@@ -239,8 +239,8 @@ impl SynTree {
     /// Performs the following substitutions
     pub fn fix_terminals(&mut self) {
         self.terminal_sub("\\/", '/');
-        self.terminal_sub("-LBR-", '(');
-        self.terminal_sub("-RBR-", ')');
+        self.terminal_sub("-LRB-", '(');
+        self.terminal_sub("-RRB-", ')');
         self.terminal_sub("``", '“');
         self.terminal_sub("''", '”');
         self.terminal_sub("`", '‘');
@@ -340,7 +340,9 @@ impl fmt::Display for SynTree {
     /// Format it as a sentance
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fn requires_pre_space(terminal: &str) -> bool {
-            terminal.chars().next().map(char::is_alphanumeric).unwrap_or(false)
+            terminal.chars().next().map(|c| {
+                c.is_alphanumeric() || c == '(' || c == ')'
+            }).unwrap_or(false)
         }
 
         let mut first = true;
