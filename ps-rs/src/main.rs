@@ -44,8 +44,6 @@ lazy_static! {
         // Parse the trees
         let trees = &*BASE_TREE as *const Vec<SynTree>;
 
-        trees.iter_mut().map(|t| t.fix_terminals()).count();
-
         // Annotate nodes with ancestral syntactic nodes
         let ref_t : &'static Vec<SynTree> = unsafe { trees.as_ref().unwrap() };
         let parent_trees = ref_t.iter()
