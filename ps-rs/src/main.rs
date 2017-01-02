@@ -44,8 +44,6 @@ lazy_static! {
         // Parse the trees
         let trees = &*BASE_TREE as *const Vec<SynTree>;
 
-        trees.iter_mut().map(|t| t.fix_terminals()).count();
-
         // Annotate nodes with ancestral syntactic nodes
         let ref_t : &'static Vec<SynTree> = unsafe { trees.as_ref().unwrap() };
         let parent_trees = ref_t.iter()
@@ -85,6 +83,16 @@ fn generate<R: rand::Rng>(rng: &mut R) -> Tree<Tag, &'static String> {
     generated
 }
 
+fn generate_no_markov<R: rand::Rng>(rng: &mut R) -> Tree<Tag, &'static String> {
+    // Get the distributions
+    let (ref distro, _) = *DISTRIBUTIONS;
+
+    // Generate a sentence
+    let generated = conditioned_on_ancestors::generate_expr(distro, rng);
+
+    generated
+}
+
 #[get("/tree")]
 fn tree() -> String {
     let generated = generate(&mut rand::thread_rng());
@@ -97,6 +105,15 @@ fn tree() -> String {
 #[get("/raw")]
 fn raw() -> String {
     let generated = generate(&mut rand::thread_rng());
+
+    println!("\n{}\n\n{:?}", generated, generated);
+
+    format!("{}", generated)
+}
+
+#[get("/no-markov")]
+fn no_markov() -> String {
+    let generated = generate_no_markov(&mut rand::thread_rng());
 
     println!("\n{}\n\n{:?}", generated, generated);
 
@@ -120,7 +137,7 @@ fn formatted() -> Template {
 }
 
 pub fn main() {
-    rocket::ignite().mount("/", routes![raw, tree, formatted]).launch();
+    rocket::ignite().mount("/", routes![raw, tree, formatted, no_markov]).launch();
 }
 
 fn parse_files<P: AsRef<Path>>(path: P) -> Vec<SynTree> {

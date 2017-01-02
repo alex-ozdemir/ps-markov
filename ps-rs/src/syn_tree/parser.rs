@@ -217,7 +217,10 @@ impl convert::AsRef<str> for Tag {
 type SynTreeT = Tree<Tag, String>;
 
 pub fn parse<I: Iterator<Item = char>>(iter: I) -> Result<SynTreeT, ParseError> {
-    parse_internal(iter).map(convert)
+    parse_internal(iter).map(|mut tree| {
+        tree.fix_terminals();
+        convert(tree)
+    })
 }
 
 pub fn parse_internal<I: Iterator<Item = char>>(iter: I) -> Result<SynTree, ParseError> {
