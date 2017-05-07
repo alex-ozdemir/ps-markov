@@ -144,7 +144,7 @@ def formatted():
     n += 1
     return render_template('statement.html', statement=out)
 
-app.run(host='134.173.42.100', port=9000)
+app.run(host='134.173.42.100', port=9001)
 
 def bw(d, s):
     D = {}
