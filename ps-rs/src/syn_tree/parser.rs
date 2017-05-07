@@ -1,5 +1,7 @@
 use super::{tokenize, LispToken, SynTree, Tree, convert};
 use std::convert;
+use std::sync::Arc;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum ParseError {
     ExpectedIdentifierAtSynTreeStart,
@@ -214,7 +216,7 @@ impl convert::AsRef<str> for Tag {
     }
 }
 
-type SynTreeT = Tree<Tag, String>;
+type SynTreeT = Tree<Tag, Arc<String>>;
 
 pub fn parse<I: Iterator<Item = char>>(iter: I) -> Result<SynTreeT, ParseError> {
     parse_internal(iter).map(|mut tree| {

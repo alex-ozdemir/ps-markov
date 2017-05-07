@@ -4,6 +4,7 @@ mod parser;
 use self::tokenizer::{tokenize, LispToken};
 use std::fmt;
 use std::slice;
+use std::sync::Arc;
 
 pub use self::parser::{parse, Tag};
 
@@ -14,6 +15,13 @@ pub enum Tree<I, L> {
     InnerNode(I, Vec<Tree<I, L>>),
     /// A leaf's data
     Leaf(L),
+}
+
+/// Data stored at some tree node.
+#[derive(PartialEq, Eq, Hash, Clone)]
+pub enum TreeData<I, L> {
+    InnerNodeData(I),
+    LeafData(L),
 }
 
 /// A reference to data stored at some tree node.
@@ -41,6 +49,35 @@ impl<'a, I, L> TreeDataRef<'a, I, L> {
         match self {
             TreeDataRef::InnerNodeData(data) => TreeDataRef::InnerNodeData(f(data)),
             TreeDataRef::LeafData(data) => TreeDataRef::LeafData(data),
+        }
+    }
+}
+
+impl<I, L> TreeData<I, L> {
+    pub fn map_inner<J, F: FnOnce(I) -> J>(self, f: F) -> TreeData<J, L> {
+        match self {
+            TreeData::InnerNodeData(data) => TreeData::InnerNodeData(f(data)),
+            TreeData::LeafData(data) => TreeData::LeafData(data),
+        }
+    }
+    pub fn map_leaves<J, F: FnOnce(L) -> J>(self, f: F) -> TreeData<I, J> {
+        match self {
+            TreeData::InnerNodeData(data) => TreeData::InnerNodeData(data),
+            TreeData::LeafData(data) => TreeData::LeafData(f(data)),
+        }
+    }
+    pub fn as_ref(&self) -> TreeDataRef<I, L> {
+        match self {
+            &TreeData::InnerNodeData(ref data) => TreeDataRef::InnerNodeData(data),
+            &TreeData::LeafData(ref data) => TreeDataRef::LeafData(data),
+        }
+    }
+}
+impl<'a, I: Clone, L: Clone> TreeDataRef<'a, I, L> {
+    pub fn to_owned(&self) -> TreeData<I, L> {
+        match self {
+            &TreeDataRef::InnerNodeData(data) => TreeData::InnerNodeData(data.clone()),
+            &TreeDataRef::LeafData(data) => TreeData::LeafData(data.clone()),
         }
     }
 }
@@ -98,11 +135,9 @@ impl<I, L> Tree<I, L> {
 
     /// Iterates over the terminals.
     pub fn terminal_iter<'a>(&'a self) -> impl Iterator<Item = &'a L> {
-        self.into_iter().filter_map(|expr| {
-            match expr {
-                &Tree::InnerNode(_, _) => None,
-                &Tree::Leaf(ref data) => Some(data),
-            }
+        self.into_iter().filter_map(|expr| match expr {
+            &Tree::InnerNode(_, _) => None,
+            &Tree::Leaf(ref data) => Some(data),
         })
     }
 
@@ -208,12 +243,10 @@ impl SynTree {
 
     /// Iterates over the terminals.
     pub fn terminal_iter<'a>(&'a self) -> impl Iterator<Item = &'a str> {
-        self.into_iter().filter_map(|expr| {
-            if expr.is_leaf() {
-                Some(expr.head.as_str())
-            } else {
-                None
-            }
+        self.into_iter().filter_map(|expr| if expr.is_leaf() {
+            Some(expr.head.as_str())
+        } else {
+            None
         })
     }
 
@@ -340,9 +373,10 @@ impl fmt::Display for SynTree {
     /// Format it as a sentance
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fn requires_pre_space(terminal: &str) -> bool {
-            terminal.chars().next().map(|c| {
-                c.is_alphanumeric() || c == '(' || c == ')'
-            }).unwrap_or(false)
+            terminal.chars()
+                .next()
+                .map(|c| c.is_alphanumeric() || c == '(' || c == ')')
+                .unwrap_or(false)
         }
 
         let mut first = true;
@@ -414,9 +448,9 @@ impl<'a> Iterator for HeadPreOrderIterMut<'a> {
     }
 }
 
-pub fn convert(tree: SynTree) -> Tree<Tag, String> {
+pub fn convert(tree: SynTree) -> Tree<Tag, Arc<String>> {
     if tree.children.len() == 0 {
-        Tree::Leaf(tree.head)
+        Tree::Leaf(Arc::new(tree.head))
     } else {
         Tree::InnerNode(Tag::from_str(tree.head.as_str()),
                         tree.children.into_iter().map(convert).collect())
